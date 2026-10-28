@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+:root {
+  --background: #faf7f2;
+  --foreground: #1c1917;
+  --brand: #e85d2a;
+  --brand-dark: #c2461a;
+  --card: #ffffff;
+  --muted: #78716c;
+  --line: #e7e2da;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand: var(--brand);
+  --color-brand-dark: var(--brand-dark);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Shared primitives so every page looks the same */
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed;
+}
+@utility btn-primary {
+  @apply btn bg-brand text-white hover:bg-brand-dark;
+}
+@utility btn-secondary {
+  @apply btn border border-line bg-card text-foreground hover:bg-stone-100;
+}
+@utility btn-danger {
+  @apply btn border border-red-200 bg-card text-red-600 hover:bg-red-50;
+}
+@utility input {
+  @apply w-full rounded-xl border border-line bg-card px-3.5 py-2.5 text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/20;
+}
+@utility label {
+  @apply mb-1.5 block text-sm font-medium;
+}
+@utility card {
+  @apply rounded-2xl border border-line bg-card;
+}
+@utility error {
+  @apply rounded-xl bg-red-50 px-3.5 py-2.5 text-sm text-red-700;
+}
