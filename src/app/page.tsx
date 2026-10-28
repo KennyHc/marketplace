@@ -1,69 +1,126 @@
-import Image from "next/image";
+import Link from "next/link";
+import { requireUser } from "@/lib/auth";
+import { CATEGORIES, categoryLabel, formatPrice, type Category } from "@/lib/types";
+import { timeAgo } from "@/lib/time";
 
-export default function Home() {
+type Row = { id: string; title: string; price: number; category: Category; photo_url: string; created_at: string };
+
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string | string[]; cat?: string | string[] }>;
+}) {
+  const sp = await searchParams;
+  const rawQ = Array.isArray(sp.q) ? sp.q[0] : sp.q;
+  const rawCat = Array.isArray(sp.cat) ? sp.cat[0] : sp.cat;
+  const q = (rawQ ?? "").replace(/[,()%*\\]/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
+  const cat = CATEGORIES.find((c) => c.value === rawCat)?.value;
+
+  const { supabase, complete } = await requireUser();
+  let query = supabase
+    .from("listings")
+    .select("id,title,price,category,photo_url,created_at")
+    .eq("status", "activo")
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (q) query = query.or(`title.ilike.%${q}%,description.ilike.%${q}%`);
+  if (cat) query = query.eq("category", cat);
+  const { data, error } = await query;
+  const listings = (data ?? []) as Row[];
+
+  const chipHref = (c?: string) => {
+    const p = new URLSearchParams();
+    if (q) p.set("q", q);
+    if (c) p.set("cat", c);
+    const s = p.toString();
+    return s ? `/?${s}` : "/";
+  };
+  const chip = (active: boolean) =>
+    `shrink-0 rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${
+      active ? "border-brand bg-brand text-white" : "border-line bg-card hover:bg-stone-100"
+    }`;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="mx-auto w-full max-w-6xl px-4 py-4">
+      {!complete && (
+        <Link
+          href="/perfil?completar=1"
+          className="mb-4 block rounded-xl bg-amber-50 px-3.5 py-2.5 text-sm text-amber-800 hover:bg-amber-100"
+        >
+          Completa tu perfil (nombre y teléfono) para publicar y contactar con vendedores →
+        </Link>
+      )}
+
+      <form action="/" method="get" className="mb-3 flex gap-2">
+        {cat && <input type="hidden" name="cat" value={cat} />}
+        <input
+          type="search"
+          name="q"
+          defaultValue={q}
+          placeholder="Buscar anuncios…"
+          className="input"
+          aria-label="Buscar"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+        <button type="submit" className="btn-primary shrink-0">
+          Buscar
+        </button>
+      </form>
+
+      <div className="-mx-4 mb-5 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+        <Link href={chipHref()} className={chip(!cat)}>
+          Todas
+        </Link>
+        {CATEGORIES.map((c) => (
+          <Link key={c.value} href={chipHref(c.value)} className={chip(cat === c.value)}>
+            {c.emoji} {c.label}
+          </Link>
+        ))}
+      </div>
+
+      {error && <p className="error mb-4">No se pudieron cargar los anuncios. Inténtalo de nuevo.</p>}
+
+      {listings.length === 0 && !error ? (
+        <div className="card flex flex-col items-center gap-3 px-6 py-14 text-center">
+          <div className="text-4xl">🛍️</div>
+          <h2 className="text-lg font-semibold">
+            {q || cat ? "No hay anuncios que coincidan" : "Todavía no hay anuncios"}
+          </h2>
+          <p className="text-sm text-muted">
+            {q || cat ? "Prueba con otra búsqueda o categoría." : "Sé el primero en publicar algo."}
           </p>
+          <Link href="/anuncios/nuevo" className="btn-primary mt-2">
+            Publicar un anuncio
+          </Link>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      ) : (
+        <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+          {listings.map((l) => (
+            <li key={l.id}>
+              <Link
+                href={`/anuncios/${l.id}`}
+                className="card group block overflow-hidden transition hover:shadow-md"
+              >
+                <div className="aspect-square overflow-hidden bg-stone-100">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={l.photo_url}
+                    alt={l.title}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition group-hover:scale-105"
+                  />
+                </div>
+                <div className="p-3">
+                  <p className="text-lg font-bold leading-tight">{formatPrice(l.price)}</p>
+                  <h3 className="mt-1 line-clamp-2 text-sm leading-snug">{l.title}</h3>
+                  <p className="mt-2 truncate text-xs text-muted">
+                    {categoryLabel(l.category)} · {timeAgo(l.created_at)}
+                  </p>
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
