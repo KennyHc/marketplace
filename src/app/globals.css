@@ -1,0 +1,164 @@
+@import "tailwindcss";
+
+/* ───────────── Design tokens ───────────── */
+:root {
+  --background: #f7f7fb;
+  --foreground: #0f1222;
+  --surface: #ffffff;
+  --surface-2: #f1f2f8;
+  --muted: #6b7088;
+  --subtle: #9aa0b5;
+  --line: #e6e8f0;
+  --line-strong: #d5d8e4;
+
+  --brand: #5167fc;
+  --brand-hover: #3f53ec;
+  --brand-active: #3344d6;
+  --brand-soft: #eef0ff;
+  --brand-softer: #f6f7ff;
+  --brand-ring: rgb(81 103 252 / 0.22);
+
+  --success: #12a37f;
+  --success-soft: #e7f7f2;
+  --warning: #f2a516;
+  --danger: #e5484d;
+  --danger-soft: #fdeeee;
+
+  --shadow-xs: 0 1px 2px rgb(15 18 34 / 0.05);
+  --shadow-sm: 0 1px 2px rgb(15 18 34 / 0.04), 0 2px 8px rgb(15 18 34 / 0.04);
+  --shadow-md: 0 2px 6px rgb(15 18 34 / 0.04), 0 12px 32px -8px rgb(15 18 34 / 0.10);
+  --shadow-lg: 0 4px 12px rgb(15 18 34 / 0.05), 0 28px 64px -16px rgb(15 18 34 / 0.18);
+  --shadow-brand: 0 8px 24px -6px rgb(81 103 252 / 0.45);
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-active: var(--brand-active);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-softer: var(--brand-softer);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  /* legacy alias so old class names keep working during the remodel */
+  --color-card: var(--surface);
+  --color-brand-dark: var(--brand-hover);
+
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-brand: var(--shadow-brand);
+
+  --ease-out-expo: var(--ease-out);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-breathe: breathe 16s ease-in-out infinite alternate;
+}
+
+/* Slow "breathing" drift for background gradient blobs */
+@keyframes breathe {
+  0%   { transform: translate3d(0, 0, 0) scale(1);       opacity: 0.55; }
+  50%  { transform: translate3d(4%, -3%, 0) scale(1.18); opacity: 0.9; }
+  100% { transform: translate3d(-3%, 4%, 0) scale(0.94); opacity: 0.6; }
+}
+
+@keyframes shimmer {
+  from { background-position: -400px 0; }
+  to { background-position: 400px 0; }
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "ss01", "cv11";
+  letter-spacing: -0.006em;
+}
+
+::selection {
+  background: var(--brand-soft);
+  color: var(--brand-active);
+}
+
+/* ───────────── Primitives ───────────── */
+@utility btn {
+  @apply inline-flex select-none items-center justify-center gap-2 rounded-xl px-4 h-11 text-[0.9375rem] font-medium tracking-[-0.01em] whitespace-nowrap transition-[background-color,box-shadow,transform,color,border-color] duration-200 ease-out-expo active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand/25;
+}
+@utility btn-primary {
+  @apply btn bg-brand text-white shadow-brand hover:bg-brand-hover active:bg-brand-active;
+}
+@utility btn-secondary {
+  @apply btn border border-line bg-surface text-foreground shadow-xs hover:border-line-strong hover:bg-surface-2;
+}
+@utility btn-ghost {
+  @apply btn text-muted hover:bg-surface-2 hover:text-foreground;
+}
+@utility btn-danger {
+  @apply btn border border-danger/20 bg-surface text-danger hover:bg-danger-soft;
+}
+@utility btn-sm {
+  @apply h-9 rounded-lg px-3 text-sm;
+}
+@utility btn-lg {
+  @apply h-12 rounded-2xl px-6 text-base;
+}
+@utility input {
+  @apply h-11 w-full rounded-xl border border-line bg-surface px-3.5 text-[0.9375rem] text-foreground shadow-xs outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-subtle hover:border-line-strong focus:border-brand focus:ring-4 focus:ring-brand/15;
+}
+@utility textarea {
+  @apply input h-auto min-h-28 py-3 leading-relaxed;
+}
+@utility label {
+  @apply mb-1.5 block text-sm font-medium text-foreground;
+}
+@utility hint {
+  @apply mt-1.5 text-xs text-muted;
+}
+@utility card {
+  @apply rounded-2xl border border-line bg-surface shadow-sm;
+}
+@utility chip {
+  @apply inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-line bg-surface px-3.5 text-sm font-medium text-muted transition-colors duration-200 hover:border-line-strong hover:text-foreground;
+}
+@utility chip-active {
+  @apply border-brand bg-brand text-white hover:border-brand hover:text-white;
+}
+@utility badge {
+  @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+}
+@utility error {
+  @apply flex items-start gap-2 rounded-xl border border-danger/15 bg-danger-soft px-3.5 py-2.5 text-sm text-danger;
+}
+@utility skeleton {
+  @apply animate-shimmer rounded-xl bg-[linear-gradient(90deg,var(--surface-2)_0%,#e9ebf3_50%,var(--surface-2)_100%)] bg-[length:800px_100%];
+}
+@utility eyebrow {
+  @apply text-xs font-semibold uppercase tracking-[0.08em] text-brand;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
