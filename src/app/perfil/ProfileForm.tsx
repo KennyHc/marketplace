@@ -1,12 +1,16 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { AlertCircle, CheckCircle2, Loader2, Phone, UserRound } from "lucide-react";
 import { motion, AnimatePresence, SPRING } from "@/components/ui/motion";
+import { toast } from "@/components/ui/Toaster";
 import { saveProfile, type ProfileState } from "./actions";
 
 export function ProfileForm({ name, phone }: { name: string; phone: string }) {
   const [state, action, pending] = useActionState<ProfileState, FormData>(saveProfile, {});
+  useEffect(() => {
+    if (state.ok) toast.success("Perfil actualizado");
+  }, [state]);
   return (
     <form action={action} className="card space-y-5 p-5 sm:p-6">
       <div>

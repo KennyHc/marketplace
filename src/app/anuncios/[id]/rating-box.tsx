@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AlertCircle, CircleCheck, Loader2, Star } from "lucide-react";
+import { toast } from "@/components/ui/Toaster";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
 import { AnimatePresence, motion, SPRING } from "@/components/ui/motion";
@@ -34,8 +35,10 @@ export default function RatingBox({
     setBusy(false);
     if (error) {
       setError(error.message);
+      toast.error(error.message);
       return;
     }
+    toast.success("Valoración enviada");
     setDone(true);
     // Let the success state show before the server re-render swaps in the "given" view.
     setTimeout(() => router.refresh(), 1800);

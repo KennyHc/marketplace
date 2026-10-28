@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { AlertCircle, Loader2, MessageCircle, Phone, ShieldCheck } from "lucide-react";
+import { toast } from "@/components/ui/Toaster";
 import { createClient } from "@/lib/supabase/client";
 import { AnimatePresence, motion, SPRING } from "@/components/ui/motion";
 
@@ -26,10 +27,14 @@ export default function PhoneReveal({ listingId }: { listingId: string }) {
     setLoading(false);
     if (error) {
       if (error.message.includes("Completa tu perfil")) setNeedsProfile(true);
-      else setError(error.message);
+      else {
+        setError(error.message);
+        toast.error(error.message);
+      }
       return;
     }
     setPhone(data as string);
+    toast.info("Teléfono visible", "El vendedor sabrá que te interesa");
   }
 
   return (

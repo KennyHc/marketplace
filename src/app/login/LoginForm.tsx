@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertCircle, ArrowLeft, ArrowRight, ChevronDown, KeyRound, Loader2, Mail } from "lucide-react";
+import { toast } from "@/components/ui/Toaster";
 import { createClient } from "@/lib/supabase/client";
 import { useAnimationControls } from "motion/react";
 import { motion, AnimatePresence, EASE } from "@/components/ui/motion";
@@ -134,6 +135,7 @@ export function LoginForm() {
     }
     setEmail(clean);
     setStep("code");
+    toast.info("Código enviado", `Revisa ${clean}`);
   }
 
   async function verifyCode(token: string) {

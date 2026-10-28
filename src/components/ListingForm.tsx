@@ -5,6 +5,7 @@ import { AlertCircle, Check, ImagePlus, Loader2, RefreshCw, Trash2 } from "lucid
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { AnimatePresence, motion, SPRING } from "@/components/ui/motion";
 import { useRouter } from "next/navigation";
+import { toast } from "@/components/ui/Toaster";
 import { createClient } from "@/lib/supabase/client";
 import { CATEGORIES, type Category, type Listing } from "@/lib/types";
 
@@ -83,15 +84,19 @@ export default function ListingForm({ listing }: { listing?: Listing }) {
       if (listing) {
         const { error: err } = await supabase.from("listings").update(fields).eq("id", listing.id);
         if (err) throw new Error("No se pudo guardar el anuncio. Inténtalo de nuevo.");
+        toast.success("Cambios guardados");
         router.push(`/anuncios/${listing.id}`);
       } else {
         const { data, error: err } = await supabase.from("listings").insert(fields).select("id").single();
         if (err || !data) throw new Error("No se pudo publicar el anuncio. Revisa que tu perfil esté completo.");
+        toast.success("Anuncio publicado", "Ya es visible para tu organización");
         router.push(`/anuncios/${data.id}`);
       }
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Algo salió mal. Inténtalo de nuevo.");
+      const msg = err instanceof Error ? err.message : "Algo salió mal. Inténtalo de nuevo.";
+      setError(msg);
+      toast.error(msg);
       setLoading(false);
     }
   }

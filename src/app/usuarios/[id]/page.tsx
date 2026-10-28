@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CalendarDays, Package } from "lucide-react";
@@ -9,6 +11,13 @@ import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { FadeIn, Stagger, StaggerItem, HoverCard } from "@/components/ui/motion";
 
 type Card = Pick<Listing, "id" | "title" | "price" | "photo_url" | "category">;
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase.from("profiles").select("name").eq("id", id).maybeSingle();
+  return { title: data?.name ?? "Perfil" };
+}
 
 export default async function UsuarioPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

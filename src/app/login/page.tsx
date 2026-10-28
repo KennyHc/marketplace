@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { AlertCircle } from "lucide-react";
 import { LoginForm } from "./LoginForm";
 import { BrandPanel } from "./BrandPanel";
 import { BreathingBackground } from "@/components/ui/BreathingBackground";
+
+export const metadata: Metadata = { title: "Entrar" };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;

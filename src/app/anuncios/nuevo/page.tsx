@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { requireCompleteProfile } from "@/lib/auth";
 import ListingForm from "@/components/ListingForm";
 import { FadeIn } from "@/components/ui/motion";
+
+export const metadata: Metadata = { title: "Publicar anuncio" };
 
 export default async function NuevoAnuncio() {
   await requireCompleteProfile();

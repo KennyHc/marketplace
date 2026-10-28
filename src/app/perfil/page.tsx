@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { BadgeCheck, Info, LogOut, PencilLine, Plus, ShoppingBag, Package } from "lucide-react";
 import { requireUser } from "@/lib/auth";
@@ -50,6 +51,8 @@ function Thumb({ src }: { src: string }) {
     <img src={src} alt="" loading="lazy" decoding="async" className="h-16 w-16 shrink-0 rounded-xl bg-surface-2 object-cover" />
   );
 }
+
+export const metadata: Metadata = { title: "Mi perfil" };
 
 export default async function PerfilPage({ searchParams }: { searchParams: Promise<{ completar?: string }> }) {
   const { completar } = await searchParams;

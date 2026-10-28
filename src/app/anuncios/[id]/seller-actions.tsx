@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { AlertCircle, CircleCheck, Eye, Loader2, PencilLine, Trash2, X } from "lucide-react";
+import { toast } from "@/components/ui/Toaster";
 import { createClient } from "@/lib/supabase/client";
 import { timeAgo } from "@/lib/time";
 import { Avatar } from "@/components/ui/Avatar";
@@ -71,8 +72,10 @@ export default function SellerActions({
     if (error) {
       setBusy(false);
       setError(error.message);
+      toast.error(error.message);
       return;
     }
+    toast.success("Anuncio eliminado");
     router.push("/");
     router.refresh();
   }
@@ -88,8 +91,10 @@ export default function SellerActions({
     setBusy(false);
     if (error) {
       setError(error.message);
+      toast.error(error.message);
       return;
     }
+    toast.success("Marcado como vendido", "Ya podéis valoraros");
     setModal(null);
     router.refresh();
   }

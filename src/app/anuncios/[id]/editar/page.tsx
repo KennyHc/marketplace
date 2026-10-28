@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -5,6 +6,8 @@ import { requireCompleteProfile } from "@/lib/auth";
 import ListingForm from "@/components/ListingForm";
 import { FadeIn } from "@/components/ui/motion";
 import type { Listing } from "@/lib/types";
+
+export const metadata: Metadata = { title: "Editar anuncio" };
 
 export default async function EditarAnuncio({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

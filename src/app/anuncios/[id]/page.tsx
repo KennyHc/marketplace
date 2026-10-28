@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, BadgeCheck, Building2, ChevronRight, Clock, HandCoins, ShieldCheck } from "lucide-react";
@@ -13,6 +15,13 @@ import SellerActions from "./seller-actions";
 import RatingBox from "./rating-box";
 import RatingGiven from "./rating-given";
 import HeroImage from "./hero-image";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase.from("listings").select("title").eq("id", id).maybeSingle();
+  return { title: data?.title ?? "Anuncio" };
+}
 
 export default async function ListingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
