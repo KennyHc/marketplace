@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/ui/Logo";
 import { HeaderShell } from "@/components/header/HeaderShell";
@@ -19,7 +20,16 @@ export async function Header() {
       <Link href="/" aria-label="Pasillo, inicio" className="rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand/25">
         <Logo />
       </Link>
-      {claims && <HeaderActions name={name} />}
+      {claims ? (
+        <HeaderActions name={name} />
+      ) : (
+        <nav className="flex items-center gap-1">
+          <Link href="/empresas" className="btn-ghost btn-sm">Para empresas</Link>
+          <Link href="/login" className="btn-secondary btn-sm">
+            Entrar <ArrowRight size={15} strokeWidth={1.75} />
+          </Link>
+        </nav>
+      )}
     </HeaderShell>
   );
 }

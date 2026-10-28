@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { AlertCircle } from "lucide-react";
+import Link from "next/link";
+import { AlertCircle, ArrowRight, Building2 } from "lucide-react";
 import { LoginForm } from "./LoginForm";
 import { BrandPanel } from "./BrandPanel";
 import { BreathingBackground } from "@/components/ui/BreathingBackground";
@@ -22,6 +23,19 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             </div>
           )}
           <LoginForm />
+          <Link
+            href="/empresas"
+            className="group mt-6 flex items-center gap-3 rounded-2xl border border-line bg-surface/70 p-3.5 text-sm transition-colors hover:border-brand/40 hover:bg-brand-softer"
+          >
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand">
+              <Building2 size={18} strokeWidth={1.75} />
+            </span>
+            <span className="flex-1">
+              <span className="block font-medium">¿Tu organización aún no usa Pasillo?</span>
+              <span className="text-muted">Planes para empresas y universidades</span>
+            </span>
+            <ArrowRight size={16} strokeWidth={1.75} className="text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-brand" />
+          </Link>
         </div>
       </div>
     </div>
