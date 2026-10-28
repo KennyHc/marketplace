@@ -83,19 +83,28 @@ function CodeInput({ value, onChange, onComplete, disabled }: { value: string; o
   );
 }
 
+// Seeded demo accounts (see scripts/seed.mjs), pre-filled so the jury can log in in one click.
+const DEMO_PASSWORD = "pasillo-demo";
+const DEMO_ACCOUNTS = [
+  { email: "jurado@demo.test", name: "Jurado" },
+  { email: "ana@demo.test", name: "Ana" },
+  { email: "luis@demo.test", name: "Luis" },
+  { email: "marta@demo.test", name: "Marta" },
+];
+
 export function LoginForm() {
   const router = useRouter();
   const [supabase] = useState(() => createClient());
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [demoEmail, setDemoEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [demoEmail, setDemoEmail] = useState(DEMO_ACCOUNTS[0].email);
+  const [password, setPassword] = useState(DEMO_PASSWORD);
   const [pwLoading, setPwLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pwError, setPwError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [demoOpen, setDemoOpen] = useState(false);
+  const [demoOpen, setDemoOpen] = useState(true);
   const controls = useAnimationControls();
 
   function fail(msg: string) {
@@ -255,6 +264,26 @@ export function LoginForm() {
               className="overflow-hidden"
             >
               <div className="space-y-4 pt-4">
+                <div className="flex flex-wrap gap-2" role="group" aria-label="Cuentas demo">
+                  {DEMO_ACCOUNTS.map((a) => {
+                    const active = demoEmail === a.email;
+                    return (
+                      <button
+                        key={a.email}
+                        type="button"
+                        onClick={() => {
+                          setDemoEmail(a.email);
+                          setPassword(DEMO_PASSWORD);
+                          setPwError(null);
+                        }}
+                        aria-pressed={active}
+                        className={`chip h-8 px-3 text-[0.8125rem] ${active ? "chip-active" : ""}`}
+                      >
+                        {a.name}
+                      </button>
+                    );
+                  })}
+                </div>
                 <div>
                   <label htmlFor="demo-email" className="label">Email</label>
                   <input id="demo-email" type="email" required className="input" value={demoEmail} onChange={(e) => setDemoEmail(e.target.value)} />
