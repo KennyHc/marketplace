@@ -30,96 +30,112 @@ const listingTemplates = [
     title: 'Apuntes de Cálculo I',
     description: 'Apuntes completos del curso de Cálculo I. Estado: como nuevo',
     price: 8,
+    photo: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f0/Notebook_writing.jpg/960px-Notebook_writing.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
   },
   {
     category: 'libros_apuntes',
     title: 'Libro Física Cuántica',
     description: 'Libro de Física Cuántica en buen estado. Estado: usado',
     price: 15,
+    photo: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/89/Cornell_syllabuses_for_Physics_112_and_Physics_213_and_Halliday_and_Resnick_textbook_used_by_both.jpg/960px-Cornell_syllabuses_for_Physics_112_and_Physics_213_and_Halliday_and_Resnick_textbook_used_by_both.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
   },
   {
     category: 'electronica',
     title: 'Monitor Dell 24"',
     description: 'Monitor Dell 24 pulgadas, Full HD, funcionando perfectamente. Estado: como nuevo',
     price: 120,
+    photo: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/64/Dell_Professional_P2212H-9899.jpg/960px-Dell_Professional_P2212H-9899.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
   },
   {
     category: 'electronica',
     title: 'Calculadora Casio fx-991',
     description: 'Calculadora científica Casio fx-991EX, leve desgaste. Estado: usado',
     price: 25,
+    photo: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8f/Casio_fx-991ES_Calculator_New.jpg/960px-Casio_fx-991ES_Calculator_New.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
   },
   {
     category: 'electronica',
     title: 'Cable USB-C 2m',
     description: 'Cable USB-C de buena calidad, 2 metros. Estado: nuevo',
     price: 5,
+    photo: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c3/USB-C_cable_2017_A.jpg/960px-USB-C_cable_2017_A.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
   },
   {
     category: 'muebles',
     title: 'Silla de escritorio ergonómica',
     description: 'Silla giratoria ergonómica, color negro. Estado: como nuevo',
     price: 85,
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/9/9c/ErgoFlip_Active_Ergonomic_Chair_eye_view.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled',
   },
   {
     category: 'muebles',
     title: 'Estantería de madera',
     description: 'Estantería de pared de madera maciza, 120x80cm. Estado: usado',
     price: 45,
+    photo: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/Encyclopedia_on_a_wooden_bookshelf.png/960px-Encyclopedia_on_a_wooden_bookshelf.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
   },
   {
     category: 'muebles',
     title: 'Escritorio pequeño',
     description: 'Escritorio compacto para habitación o despacho. Estado: como nuevo',
     price: 60,
+    photo: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/db/Desk_or_writing_table_MET_94197.jpg/960px-Desk_or_writing_table_MET_94197.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
   },
   {
     category: 'material_oficina',
     title: 'Pack de bolígrafos Staedtler',
     description: 'Pack de 24 bolígrafos de colores de Staedtler. Estado: nuevo',
     price: 12,
+    photo: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/26/STAEDTLER_avant-garde.jpg/960px-STAEDTLER_avant-garde.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
   },
   {
     category: 'material_oficina',
     title: 'Cuaderno A4 de hojas cuadriculadas',
     description: 'Cuaderno A4, 200 hojas cuadriculadas, sin usar. Estado: nuevo',
     price: 4,
+    photo: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/Graph-ruled_composition_book%2C_4_squares_per_inch%2C_80_pages.jpg/960px-Graph-ruled_composition_book%2C_4_squares_per_inch%2C_80_pages.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
   },
   {
     category: 'material_oficina',
     title: 'Organizador de escritorio',
     description: 'Organizador con varios compartimentos para escritorio. Estado: como nuevo',
     price: 18,
+    photo: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/44/EFTA00001176_-_Sleek_Apple_iMac_sits_on_a_glass_desk_accompanied_by_a_vintage_telephone_and_a_pen_holder_in_a_tidy_workspace.jpg/960px-EFTA00001176_-_Sleek_Apple_iMac_sits_on_a_glass_desk_accompanied_by_a_vintage_telephone_and_a_pen_holder_in_a_tidy_workspace.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
   },
   {
     category: 'ropa',
     title: 'Sudadera de la uni talla M',
     description: 'Sudadera gris del logo de la universidad, talla M. Estado: como nuevo',
     price: 20,
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Sudadera_urban.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled',
   },
   {
     category: 'ropa',
     title: 'Jeans azul oscuro talla 32',
     description: 'Pantalones vaqueros azul oscuro, talla 32. Estado: usado',
     price: 25,
+    photo: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d5/Women%27s_Levi%27s_jeans_inside_out.jpg/960px-Women%27s_Levi%27s_jeans_inside_out.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
   },
   {
     category: 'ropa',
     title: 'Camiseta blanca básica',
     description: 'Camiseta blanca de algodón 100%, talla L. Estado: nuevo',
     price: 8,
+    photo: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=800&fit=crop&auto=format&q=80',
   },
   {
     category: 'otros',
     title: 'Planta verde de interior',
     description: 'Planta decorativa de interior con maceta. Estado: como nuevo',
     price: 12,
+    photo: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/58/Ponytail_Palm_Houseplant.jpg/960px-Ponytail_Palm_Houseplant.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
   },
   {
     category: 'otros',
     title: 'Lámpara de escritorio LED',
     description: 'Lámpara de escritorio ajustable con LED, funcionando bien. Estado: usado',
     price: 22,
+    photo: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2c/Battery_powered_LED_desk_lamp-7420.jpg/960px-Battery_powered_LED_desk_lamp-7420.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
   },
 ];
 
@@ -212,9 +228,6 @@ async function seedDatabase() {
     const daysAgo = Math.floor((i / listingTemplates.length) * 10); // Spread over 10 days
     const createdAt = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
 
-    const listingSlug = template.title.toLowerCase().replace(/\s+/g, '-');
-    const photoUrl = `https://picsum.photos/seed/${listingSlug}-${i}/600/600`;
-
     listings.push({
       org_id: orgId,
       seller_id: sellerId,
@@ -222,7 +235,7 @@ async function seedDatabase() {
       description: template.description,
       price: template.price,
       category: template.category,
-      photo_url: photoUrl,
+      photo_url: template.photo,
       status: 'activo',
       created_at: createdAt,
     });

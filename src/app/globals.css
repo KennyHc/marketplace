@@ -68,6 +68,14 @@
   --font-mono: var(--font-geist-mono);
 
   --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-breathe: breathe 16s ease-in-out infinite alternate;
+}
+
+/* Slow "breathing" drift for background gradient blobs */
+@keyframes breathe {
+  0%   { transform: translate3d(0, 0, 0) scale(1);       opacity: 0.55; }
+  50%  { transform: translate3d(4%, -3%, 0) scale(1.18); opacity: 0.9; }
+  100% { transform: translate3d(-3%, 4%, 0) scale(0.94); opacity: 0.6; }
 }
 
 @keyframes shimmer {

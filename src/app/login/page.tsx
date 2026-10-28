@@ -1,11 +1,14 @@
 import { AlertCircle } from "lucide-react";
 import { LoginForm } from "./LoginForm";
 import { BrandPanel } from "./BrandPanel";
+import { BreathingBackground } from "@/components/ui/BreathingBackground";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
   return (
-    <div className="mx-auto grid max-w-5xl overflow-hidden rounded-3xl border border-line bg-surface shadow-lg lg:min-h-[640px] lg:grid-cols-[1.05fr_1fr]">
+    <>
+    <BreathingBackground />
+    <div className="mx-auto grid max-w-5xl overflow-hidden rounded-3xl border border-white/60 bg-surface/80 shadow-lg backdrop-blur-xl lg:min-h-[640px] lg:grid-cols-[1.05fr_1fr]">
       <BrandPanel />
       <div className="flex flex-col justify-center px-5 py-8 sm:px-10 lg:px-12">
         <div className="mx-auto w-full max-w-sm">
@@ -19,5 +22,6 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         </div>
       </div>
     </div>
+    </>
   );
 }

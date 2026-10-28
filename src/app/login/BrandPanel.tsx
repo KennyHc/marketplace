@@ -19,8 +19,9 @@ export function BrandPanel() {
   return (
     <div className="relative overflow-hidden bg-brand px-6 py-8 text-white sm:px-10 lg:flex lg:flex-col lg:justify-between lg:py-12">
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-24 -top-24 h-80 w-80 rounded-full bg-white/20 blur-3xl" />
-        <div className="absolute -bottom-32 right-0 h-96 w-96 rounded-full bg-[#7c5cfc]/70 blur-3xl" />
+        <div className="absolute -left-24 -top-24 h-80 w-80 rounded-full bg-white/25 blur-3xl animate-breathe" style={{ animationDuration: "12s" }} />
+        <div className="absolute -bottom-32 right-0 h-96 w-96 rounded-full bg-[#7c5cfc]/70 blur-3xl animate-breathe" style={{ animationDuration: "15s", animationDelay: "-5s" }} />
+        <div className="absolute left-1/3 top-1/3 h-72 w-72 rounded-full bg-[#38bdf8]/35 blur-3xl animate-breathe" style={{ animationDuration: "18s", animationDelay: "-9s" }} />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgb(255_255_255/0.12)_1px,transparent_0)] [background-size:22px_22px]" />
       </div>
 
