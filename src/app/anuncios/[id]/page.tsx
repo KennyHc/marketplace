@@ -1,10 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowLeft, BadgeCheck, Building2, ChevronRight, Clock, HandCoins, ShieldCheck } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { categoryLabel, formatPrice, type Listing, type Reputation } from "@/lib/types";
+import { timeAgo } from "@/lib/time";
+import { Avatar } from "@/components/ui/Avatar";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
+import { Rating } from "@/components/ui/Rating";
+import { FadeIn, Stagger, StaggerItem } from "@/components/ui/motion";
 import PhoneReveal from "./phone-reveal";
 import SellerActions from "./seller-actions";
 import RatingBox from "./rating-box";
+import RatingGiven from "./rating-given";
+import HeroImage from "./hero-image";
 
 export default async function ListingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -24,15 +32,20 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   const sellerName = seller?.name ?? "Vecino";
 
   // Vendedor: quién ha revelado el teléfono.
-  let revealers: { id: string; name: string }[] = [];
+  let revealers: { id: string; name: string; at: string }[] = [];
   if (isSeller) {
-    const { data: reveals } = await supabase.from("contact_reveals").select("buyer_id").eq("listing_id", id);
+    const { data: reveals } = await supabase
+      .from("contact_reveals")
+      .select("buyer_id,created_at")
+      .eq("listing_id", id)
+      .order("created_at", { ascending: false });
     const ids = (reveals ?? []).map((r) => r.buyer_id as string);
     if (ids.length) {
       const { data: people } = await supabase.from("profiles").select("id,name").in("id", ids);
-      revealers = ids.map((bid) => ({
-        id: bid,
-        name: people?.find((p) => p.id === bid)?.name ?? "Vecino",
+      revealers = (reveals ?? []).map((r) => ({
+        id: r.buyer_id as string,
+        name: people?.find((p) => p.id === r.buyer_id)?.name ?? "Vecino",
+        at: r.created_at as string,
       }));
     }
   }
@@ -53,79 +66,108 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
       .eq("from_user", user.id)
       .maybeSingle();
     rating = existing ? (
-      <div className="card p-4 text-center">
-        <p>
-          Ya valoraste a <strong>{counterpartName}</strong>:{" "}
-          <span className="text-amber-400">{"★".repeat(existing.stars)}</span>
-          <span className="text-line">{"★".repeat(5 - existing.stars)}</span>
-        </p>
-      </div>
+      <RatingGiven stars={existing.stars} name={counterpartName} />
     ) : (
       <RatingBox listingId={id} toUser={counterpartId} toName={counterpartName} />
     );
   }
 
-  const date = new Date(listing.created_at).toLocaleDateString("es-ES", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  const showNotice = sold && !isSeller && !isBuyer;
 
   return (
-    <main className="mx-auto max-w-2xl space-y-4 pb-24">
-      <div className="relative">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={listing.photo_url}
-          alt={listing.title}
-          className={`aspect-square w-full bg-line object-cover sm:rounded-2xl ${sold ? "opacity-70" : ""}`}
-        />
-        {sold && (
-          <span className="absolute left-3 top-3 rounded-full bg-foreground px-3 py-1 text-sm font-bold text-white">
-            Vendido
-          </span>
-        )}
-      </div>
-
-      <div className="space-y-4 px-4">
-        <div>
-          <p className="text-3xl font-extrabold text-brand">{formatPrice(listing.price)}</p>
-          <h1 className="mt-1 text-xl font-semibold">{listing.title}</h1>
-          <p className="mt-1 text-sm text-muted">
-            {categoryLabel(listing.category)} · Publicado el {date}
-          </p>
-        </div>
-
-        <p className="whitespace-pre-line leading-relaxed">{listing.description}</p>
-
-        <Link href={`/usuarios/${listing.seller_id}`} className="card flex items-center gap-3 p-4">
-          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand/10 text-lg font-bold text-brand">
-            {sellerName.charAt(0).toUpperCase()}
-          </span>
-          <span className="flex-1">
-            <span className="block font-semibold">{sellerName}</span>
-            <span className="block text-sm text-muted">Vendedor</span>
-          </span>
-          {rep && rep.rating_count > 0 ? (
-            <span className="text-sm font-medium">
-              <span className="text-amber-400">★</span> {rep.avg_stars} · {rep.rating_count}{" "}
-              {rep.rating_count === 1 ? "valoración" : "valoraciones"}
-            </span>
-          ) : (
-            <span className="rounded-full bg-brand/10 px-2 py-1 text-xs font-semibold text-brand">Nuevo</span>
-          )}
+    <div className="pb-28 lg:pb-0">
+      <FadeIn y={6}>
+        <Link href="/" className="btn-ghost btn-sm -ml-3 mb-4 inline-flex">
+          <ArrowLeft size={16} strokeWidth={1.75} /> Volver
         </Link>
+      </FadeIn>
 
-        <p className="text-sm text-muted">🤝 Entrega en mano dentro del edificio · Pago en mano o Bizum</p>
+      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr] lg:gap-10">
+        <FadeIn y={10}>
+          <HeroImage src={listing.photo_url} alt={listing.title} sold={sold} />
+        </FadeIn>
 
-        {!sold && !isSeller && <PhoneReveal listingId={id} />}
-        {!sold && isSeller && <SellerActions listingId={id} revealers={revealers} />}
-        {sold && (
-          <p className="rounded-xl bg-line/60 p-3 text-center text-sm text-muted">Este artículo ya se vendió.</p>
-        )}
+        <div className="lg:sticky lg:top-24 lg:self-start">
+          <Stagger gap={0.07} delay={0.1} className="space-y-4">
+            <StaggerItem>
+              <span className="badge gap-1.5 bg-brand-soft px-3 py-1 text-brand">
+                <CategoryIcon category={listing.category} size={14} />
+                {categoryLabel(listing.category)}
+              </span>
+              <h1 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">{listing.title}</h1>
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                <p className="text-3xl font-semibold tabular-nums tracking-tight text-brand">
+                  {formatPrice(listing.price)}
+                </p>
+                {sold && (
+                  <span className="badge gap-1 bg-success-soft px-3 py-1 text-success">
+                    <BadgeCheck size={14} strokeWidth={1.75} /> Vendido
+                  </span>
+                )}
+              </div>
+              <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-muted">
+                <Clock size={14} strokeWidth={1.75} /> Publicado {timeAgo(listing.created_at)}
+              </p>
+            </StaggerItem>
 
-        {rating}
+            <StaggerItem className="card p-5">
+              <p className="eyebrow mb-2">Descripción</p>
+              <p className="whitespace-pre-line leading-relaxed text-foreground/90">{listing.description}</p>
+            </StaggerItem>
+
+            <StaggerItem>
+              <Link
+                href={`/usuarios/${listing.seller_id}`}
+                className="card group flex items-center gap-3 p-4 transition-[border-color,box-shadow] duration-200 hover:border-line-strong hover:shadow-md"
+              >
+                <Avatar name={sellerName} size={46} />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-semibold">{sellerName}</span>
+                  <span className="mt-0.5 block">
+                    <Rating avg={rep?.avg_stars ?? null} count={rep?.rating_count ?? 0} size="md" />
+                  </span>
+                  <span className="mt-1 flex items-center gap-1 text-xs text-muted">
+                    <ShieldCheck size={13} strokeWidth={1.75} className="text-success" />
+                    Miembro verificado de Demo Org
+                  </span>
+                </span>
+                <ChevronRight
+                  size={18}
+                  strokeWidth={1.75}
+                  className="text-subtle transition-transform duration-200 group-hover:translate-x-0.5"
+                />
+              </Link>
+            </StaggerItem>
+
+            <StaggerItem className="card divide-y divide-line">
+              <p className="flex items-center gap-3 px-4 py-3 text-sm">
+                <Building2 size={18} strokeWidth={1.75} className="text-brand" />
+                Entrega en mano en el edificio
+              </p>
+              <p className="flex items-center gap-3 px-4 py-3 text-sm">
+                <HandCoins size={18} strokeWidth={1.75} className="text-brand" />
+                Pago en mano o Bizum
+              </p>
+            </StaggerItem>
+
+            {isSeller && !sold && (
+              <StaggerItem>
+                <SellerActions listingId={id} revealers={revealers} />
+              </StaggerItem>
+            )}
+            {showNotice && (
+              <StaggerItem className="card flex items-center gap-3 bg-surface-2 p-4 text-sm text-muted shadow-none">
+                <BadgeCheck size={18} strokeWidth={1.75} />
+                Este artículo ya se vendió
+              </StaggerItem>
+            )}
+            {rating && <StaggerItem>{rating}</StaggerItem>}
+          </Stagger>
+
+          {/* Kept outside Stagger: on mobile this is a fixed bar and transforms/filters would break `fixed`. */}
+          {!sold && !isSeller && <PhoneReveal listingId={id} />}
+        </div>
       </div>
-    </main>
+    </div>
   );
 }

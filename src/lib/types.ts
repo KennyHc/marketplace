@@ -6,13 +6,13 @@ export type Category =
   | "ropa"
   | "otros";
 
-export const CATEGORIES: { value: Category; label: string; emoji: string }[] = [
-  { value: "libros_apuntes", label: "Libros y apuntes", emoji: "📚" },
-  { value: "electronica", label: "Electrónica", emoji: "💻" },
-  { value: "muebles", label: "Muebles", emoji: "🪑" },
-  { value: "material_oficina", label: "Material de oficina o estudio", emoji: "✏️" },
-  { value: "ropa", label: "Ropa", emoji: "👕" },
-  { value: "otros", label: "Otros", emoji: "📦" },
+export const CATEGORIES: { value: Category; label: string }[] = [
+  { value: "libros_apuntes", label: "Libros y apuntes" },
+  { value: "electronica", label: "Electrónica" },
+  { value: "muebles", label: "Muebles" },
+  { value: "material_oficina", label: "Material de oficina o estudio" },
+  { value: "ropa", label: "Ropa" },
+  { value: "otros", label: "Otros" },
 ];
 
 export const categoryLabel = (c: Category) => CATEGORIES.find((x) => x.value === c)?.label ?? c;

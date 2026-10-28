@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { AlertCircle, Loader2, MessageCircle, Phone, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { AnimatePresence, motion, SPRING } from "@/components/ui/motion";
 
 function whatsappUrl(phone: string) {
   let d = phone.replace(/\D/g, "");
@@ -30,35 +32,82 @@ export default function PhoneReveal({ listingId }: { listingId: string }) {
     setPhone(data as string);
   }
 
-  if (phone) {
-    return (
-      <div className="card space-y-3 p-4">
-        <p className="label">Teléfono del vendedor</p>
-        <a href={`tel:${phone}`} className="block text-2xl font-bold tracking-wide text-brand">
-          {phone}
-        </a>
-        <div className="grid grid-cols-2 gap-2">
-          <a href={`tel:${phone}`} className="btn-secondary text-center">📞 Llamar</a>
-          <a href={whatsappUrl(phone)} target="_blank" rel="noopener noreferrer" className="btn-primary text-center">
-            💬 WhatsApp
-          </a>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-2">
-      <button onClick={reveal} disabled={loading || needsProfile} className="btn-primary w-full py-3 text-base">
-        {loading ? "Cargando…" : "📞 Ver teléfono"}
-      </button>
-      {needsProfile && (
-        <p className="error">
-          Completa tu perfil para ver el teléfono.{" "}
-          <Link href="/perfil?completar=1" className="font-semibold underline">Ir a mi perfil</Link>
-        </p>
+    <AnimatePresence mode="wait" initial={false}>
+      {phone ? (
+        <motion.div
+          key="revealed"
+          initial={{ opacity: 0, scale: 0.92, y: 12 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={SPRING}
+          className="relative mt-4 overflow-hidden rounded-2xl border border-brand/20 bg-brand-softer p-5 shadow-md"
+        >
+          <motion.span
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/70 to-transparent"
+            initial={{ left: "-35%" }}
+            animate={{ left: "120%" }}
+            transition={{ duration: 0.9, ease: "easeOut", delay: 0.1 }}
+          />
+          <p className="eyebrow flex items-center gap-1.5">
+            <ShieldCheck size={14} strokeWidth={1.75} /> Teléfono del vendedor
+          </p>
+          <a
+            href={`tel:${phone}`}
+            className="mt-2 block text-3xl font-semibold tabular-nums tracking-tight text-foreground"
+          >
+            {phone}
+          </a>
+          <div className="mt-4 grid grid-cols-2 gap-2.5">
+            <a href={`tel:${phone}`} className="btn-secondary btn-lg">
+              <Phone size={18} strokeWidth={1.75} /> Llamar
+            </a>
+            <a href={whatsappUrl(phone)} target="_blank" rel="noopener noreferrer" className="btn-primary btn-lg">
+              <MessageCircle size={18} strokeWidth={1.75} /> WhatsApp
+            </a>
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div
+          key="cta"
+          exit={{ opacity: 0, scale: 0.96 }}
+          transition={{ duration: 0.15 }}
+          className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/85 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-xl lg:static lg:mt-4 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none"
+        >
+          <AnimatePresence initial={false}>
+            {(needsProfile || error) && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <p className="error mb-2.5">
+                  <AlertCircle size={16} strokeWidth={1.75} className="mt-0.5 shrink-0" />
+                  {needsProfile ? (
+                    <span>
+                      Completa tu perfil para ver el teléfono.{" "}
+                      <Link href="/perfil?completar=1" className="font-semibold underline">
+                        Ir a mi perfil
+                      </Link>
+                    </span>
+                  ) : (
+                    <span>{error}</span>
+                  )}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <button onClick={reveal} disabled={loading || needsProfile} className="btn-primary btn-lg w-full">
+            {loading ? (
+              <Loader2 size={18} strokeWidth={1.75} className="animate-spin" />
+            ) : (
+              <Phone size={18} strokeWidth={1.75} />
+            )}
+            {loading ? "Cargando" : "Ver teléfono"}
+          </button>
+        </motion.div>
       )}
-      {error && <p className="error">{error}</p>}
-    </div>
+    </AnimatePresence>
   );
 }
