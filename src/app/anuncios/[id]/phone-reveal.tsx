@@ -13,7 +13,7 @@ function whatsappUrl(phone: string) {
   return `https://wa.me/${d}`;
 }
 
-export default function PhoneReveal({ listingId }: { listingId: string }) {
+export default function PhoneReveal({ listingId, inline = false }: { listingId: string; inline?: boolean }) {
   const [phone, setPhone] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [needsProfile, setNeedsProfile] = useState(false);
@@ -77,7 +77,11 @@ export default function PhoneReveal({ listingId }: { listingId: string }) {
           key="cta"
           exit={{ opacity: 0, scale: 0.96 }}
           transition={{ duration: 0.15 }}
-          className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/85 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-xl lg:static lg:mt-4 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none"
+          className={
+            inline
+              ? "mt-3"
+              : "fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/85 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-xl lg:static lg:mt-4 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none"
+          }
         >
           <AnimatePresence initial={false}>
             {(needsProfile || error) && (
@@ -103,7 +107,7 @@ export default function PhoneReveal({ listingId }: { listingId: string }) {
               </motion.div>
             )}
           </AnimatePresence>
-          <button onClick={reveal} disabled={loading || needsProfile} className="btn-primary btn-lg w-full">
+          <button onClick={reveal} disabled={loading || needsProfile} className={`${inline ? "btn-secondary" : "btn-primary"} btn-lg w-full`}>
             {loading ? (
               <Loader2 size={18} strokeWidth={1.75} className="animate-spin" />
             ) : (

@@ -17,7 +17,7 @@ export const CATEGORIES: { value: Category; label: string }[] = [
 
 export const categoryLabel = (c: Category) => CATEGORIES.find((x) => x.value === c)?.label ?? c;
 
-export type ListingStatus = "activo" | "vendido";
+export type ListingStatus = "activo" | "reservado" | "vendido";
 
 export type Listing = {
   id: string;

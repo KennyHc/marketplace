@@ -1,9 +1,9 @@
 "use client";
 
-import { BadgeCheck } from "lucide-react";
+import { BadgeCheck, Lock } from "lucide-react";
 import { motion, EASE } from "@/components/ui/motion";
 
-export default function HeroImage({ src, alt, sold }: { src: string; alt: string; sold: boolean }) {
+export default function HeroImage({ src, alt, sold, reserved = false }: { src: string; alt: string; sold: boolean; reserved?: boolean }) {
   return (
     <div className="relative aspect-square max-h-[62vh] w-full overflow-hidden rounded-3xl border border-line bg-surface-2 shadow-md sm:aspect-[4/3] lg:max-h-none">
       <motion.div
@@ -13,11 +13,16 @@ export default function HeroImage({ src, alt, sold }: { src: string; alt: string
         transition={{ duration: 0.9, ease: EASE }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt={alt} className={`h-full w-full object-cover ${sold ? "opacity-70 saturate-50" : ""}`} />
+        <img src={src} alt={alt} className={`h-full w-full object-cover ${sold || reserved ? "opacity-70 saturate-50" : ""}`} />
       </motion.div>
       {sold && (
         <span className="badge absolute left-4 top-4 gap-1.5 bg-foreground px-3 py-1.5 text-sm text-white shadow-md">
           <BadgeCheck size={16} strokeWidth={1.75} /> Vendido
+        </span>
+      )}
+      {reserved && (
+        <span className="badge absolute left-4 top-4 gap-1.5 bg-brand px-3 py-1.5 text-sm text-white shadow-md">
+          <Lock size={16} strokeWidth={1.75} /> Reservado
         </span>
       )}
     </div>

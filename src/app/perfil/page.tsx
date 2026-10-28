@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BadgeCheck, Info, LogOut, PencilLine, Plus, ShoppingBag, Package } from "lucide-react";
+import { BadgeCheck, Info, Lock, LogOut, PencilLine, Plus, ShoppingBag, Package, Wallet } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { formatPrice, type Listing, type Reputation } from "@/lib/types";
 import { Avatar } from "@/components/ui/Avatar";
@@ -8,12 +8,17 @@ import { Rating } from "@/components/ui/Rating";
 import { FadeIn, Stagger, StaggerItem } from "@/components/ui/motion";
 import { ProfileForm } from "./ProfileForm";
 import { logout } from "./actions";
+import { getSellerPayout } from "@/lib/payments";
+import CobrosToast from "./cobros-toast";
+import ConnectButton from "./connect-button";
 
 type Row = Pick<Listing, "id" | "title" | "price" | "status" | "photo_url">;
 
 function StatusBadge({ status }: { status: string }) {
   return status === "activo" ? (
     <span className="badge bg-success-soft text-success">Activo</span>
+  ) : status === "reservado" ? (
+    <span className="badge bg-brand-soft text-brand">Reservado</span>
   ) : (
     <span className="badge bg-surface-2 text-muted">Vendido</span>
   );
@@ -54,8 +59,8 @@ function Thumb({ src }: { src: string }) {
 
 export const metadata: Metadata = { title: "Mi perfil" };
 
-export default async function PerfilPage({ searchParams }: { searchParams: Promise<{ completar?: string }> }) {
-  const { completar } = await searchParams;
+export default async function PerfilPage({ searchParams }: { searchParams: Promise<{ completar?: string; cobros?: string }> }) {
+  const { completar, cobros } = await searchParams;
   const { supabase, user, profile, phone, complete } = await requireUser();
 
   const [{ data: rep }, { data: mine }, { data: bought }] = await Promise.all([
@@ -63,6 +68,23 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
     supabase.from("listings").select("id,title,price,status,photo_url").eq("seller_id", user.id).order("created_at", { ascending: false }).returns<Row[]>(),
     supabase.from("listings").select("id,title,price,status,photo_url").eq("buyer_id", user.id).order("sold_at", { ascending: false }).returns<Row[]>(),
   ]);
+
+  const payout = await getSellerPayout(user.id).catch(() => ({ accountId: null as string | null, ready: false }));
+
+  const { data: openOrders } = await supabase
+    .from("orders")
+    .select("id,listing_id,amount_cents")
+    .eq("buyer_id", user.id)
+    .eq("status", "pagado")
+    .returns<{ id: string; listing_id: string; amount_cents: number }[]>();
+  const orderListingIds = (openOrders ?? []).map((o) => o.listing_id);
+  const { data: orderListings } = orderListingIds.length
+    ? await supabase.from("listings").select("id,title,price,status,photo_url").in("id", orderListingIds).returns<Row[]>()
+    : { data: [] as Row[] };
+  const pending = (openOrders ?? []).flatMap((o) => {
+    const l = orderListings?.find((x) => x.id === o.listing_id);
+    return l ? [{ ...l, amount: o.amount_cents / 100 }] : [];
+  });
 
   const count = rep?.rating_count ?? 0;
   const active = mine?.filter((l) => l.status === "activo").length ?? 0;
@@ -100,6 +122,69 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
       <FadeIn delay={0.1}>
         <ProfileForm name={profile.name ?? ""} phone={phone ?? ""} />
       </FadeIn>
+
+      <CobrosToast cobros={cobros} ready={payout.ready} />
+
+      <FadeIn delay={0.12}>
+        <section className="card p-5 sm:p-6">
+          <div className="flex items-center gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-soft text-brand">
+              <Wallet size={18} strokeWidth={1.75} />
+            </span>
+            <h2 className="text-lg font-semibold tracking-tight">Cobros</h2>
+            {payout.ready && (
+              <span className="badge ml-auto gap-1 bg-success-soft text-success">
+                <BadgeCheck size={14} strokeWidth={1.75} /> Pago protegido activado
+              </span>
+            )}
+          </div>
+          {payout.ready ? (
+            <p className="mt-3 text-sm text-muted">
+              Tus compradores pueden pagarte con tarjeta. Recibes el dinero cuando confirman la entrega.
+            </p>
+          ) : payout.accountId ? (
+            <>
+              <p className="mt-3 text-sm text-muted">Completa tu alta en Stripe para empezar a recibir pagos con tarjeta.</p>
+              <form action="/api/stripe/connect" method="POST" className="mt-4">
+                <ConnectButton label="Continuar en Stripe" variant="secondary" />
+              </form>
+            </>
+          ) : (
+            <>
+              <p className="mt-3 text-sm text-muted">
+                Activa el pago protegido para que tus compradores te paguen con tarjeta. El dinero se te libera cuando
+                confirman que han recibido el artículo.
+              </p>
+              <form action="/api/stripe/connect" method="POST" className="mt-4">
+                <ConnectButton label="Activar cobros con Stripe" variant="primary" />
+              </form>
+              <p className="mt-3 text-xs text-muted">Modo de prueba: puedes usar datos ficticios</p>
+            </>
+          )}
+        </section>
+      </FadeIn>
+
+      {pending.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-lg font-semibold tracking-tight">Pedidos en curso</h2>
+          <Stagger className="space-y-2.5" gap={0.04}>
+            {pending.map((l) => (
+              <StaggerItem key={l.id}>
+                <Link href={`/anuncios/${l.id}`} className="card flex items-center gap-3 p-2.5 transition-shadow hover:shadow-md">
+                  <Thumb src={l.photo_url} />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium">{l.title}</p>
+                    <p className="mt-0.5 font-semibold tabular-nums">{formatPrice(l.amount)}</p>
+                    <p className="mt-1 flex items-center gap-1 text-xs text-brand">
+                      <Lock size={12} strokeWidth={1.75} /> Pago retenido · confirma la entrega
+                    </p>
+                  </div>
+                </Link>
+              </StaggerItem>
+            ))}
+          </Stagger>
+        </section>
+      )}
 
       <section>
         <h2 className="mb-3 text-lg font-semibold tracking-tight">Mis anuncios</h2>

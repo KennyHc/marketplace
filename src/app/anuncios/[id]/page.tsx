@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, BadgeCheck, Building2, ChevronRight, Clock, HandCoins, ShieldCheck } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Building2, ChevronRight, Clock, HandCoins, Lock, ShieldCheck } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { categoryLabel, formatPrice, type Listing, type Reputation } from "@/lib/types";
 import { timeAgo } from "@/lib/time";
@@ -15,6 +15,10 @@ import SellerActions from "./seller-actions";
 import RatingBox from "./rating-box";
 import RatingGiven from "./rating-given";
 import HeroImage from "./hero-image";
+import PagoToast from "./pago-toast";
+import BuyCard from "./buy-card";
+import ReleaseButton from "./release-button";
+import { getActiveOrder, syncCheckoutSession } from "@/lib/payments";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
@@ -23,9 +27,18 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: data?.title ?? "Anuncio" };
 }
 
-export default async function ListingPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ListingPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ pago?: string; session_id?: string }>;
+}) {
   const { id } = await params;
+  const { pago, session_id } = await searchParams;
   const { supabase, user } = await requireUser();
+
+  if (session_id) await syncCheckoutSession(session_id, user.id);
 
   const { data: listing } = await supabase.from("listings").select("*").eq("id", id).maybeSingle<Listing>();
   if (!listing) notFound();
@@ -33,6 +46,22 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   const isSeller = listing.seller_id === user.id;
   const isBuyer = listing.buyer_id === user.id;
   const sold = listing.status === "vendido";
+  const reserved = listing.status === "reservado";
+
+  const order = await getActiveOrder(id);
+  const isOrderBuyer = !!order && order.buyer_id === user.id;
+  let acceptsPayments = false;
+  if (listing.status === "activo" && !isSeller) {
+    const { data } = await supabase.rpc("seller_accepts_payments", { p_seller: listing.seller_id });
+    acceptsPayments = data === true;
+  }
+  let orderBuyerName = "El comprador";
+  if (reserved && isSeller && order) {
+    const { data: b } = await supabase.from("profiles").select("name").eq("id", order.buyer_id).maybeSingle();
+    orderBuyerName = b?.name ?? "El comprador";
+  }
+  const amount = order ? formatPrice(order.amount_cents / 100) : "";
+  const canBuy = listing.status === "activo" && !isSeller && acceptsPayments;
 
   const [{ data: seller }, { data: rep }] = await Promise.all([
     supabase.from("profiles").select("id,name").eq("id", listing.seller_id).single<{ id: string; name: string | null }>(),
@@ -85,6 +114,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="pb-28 lg:pb-0">
+      <PagoToast pago={pago} />
       <FadeIn y={6}>
         <Link href="/" className="btn-ghost btn-sm -ml-3 mb-4 inline-flex">
           <ArrowLeft size={16} strokeWidth={1.75} /> Volver
@@ -93,7 +123,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
 
       <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr] lg:gap-10">
         <FadeIn y={10}>
-          <HeroImage src={listing.photo_url} alt={listing.title} sold={sold} />
+          <HeroImage src={listing.photo_url} alt={listing.title} sold={sold} reserved={reserved} />
         </FadeIn>
 
         <div className="lg:sticky lg:top-24 lg:self-start">
@@ -159,7 +189,43 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
               </p>
             </StaggerItem>
 
-            {isSeller && !sold && (
+            {reserved && isOrderBuyer && order && (
+              <StaggerItem className="card border-success/25 bg-success-soft/40 p-5">
+                <p className="flex items-center gap-2 font-semibold text-success">
+                  <Lock size={18} strokeWidth={1.75} /> Pago retenido · {amount}
+                </p>
+                <p className="mt-1.5 text-sm text-muted">
+                  Tu dinero queda retenido y el vendedor no lo recibirá hasta que confirmes que tienes el artículo.
+                  Contacta con el vendedor para quedar en el edificio.
+                </p>
+                <div className="mt-4">
+                  <ReleaseButton orderId={order.id} />
+                </div>
+              </StaggerItem>
+            )}
+            {reserved && isSeller && order && (
+              <StaggerItem className="card flex items-start gap-3 p-5">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-soft text-brand">
+                  <Lock size={18} strokeWidth={1.75} />
+                </span>
+                <p className="text-sm text-muted">
+                  <strong className="font-semibold text-foreground">Reservado</strong> — {orderBuyerName} ha pagado{" "}
+                  {amount}. Recibirás el dinero cuando confirme la entrega.
+                </p>
+              </StaggerItem>
+            )}
+            {reserved && !isSeller && !isOrderBuyer && (
+              <StaggerItem className="card flex items-center gap-3 bg-surface-2 p-4 text-sm text-muted shadow-none">
+                <Lock size={18} strokeWidth={1.75} />
+                Reservado
+              </StaggerItem>
+            )}
+            {canBuy && (
+              <StaggerItem>
+                <BuyCard listingId={id} price={formatPrice(listing.price)} />
+              </StaggerItem>
+            )}
+            {isSeller && listing.status === "activo" && (
               <StaggerItem>
                 <SellerActions listingId={id} revealers={revealers} />
               </StaggerItem>
@@ -170,11 +236,24 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
                 Este artículo ya se vendió
               </StaggerItem>
             )}
+            {sold && order?.status === "liberado" && (
+              <StaggerItem>
+                <span className="badge gap-1.5 bg-success-soft px-3 py-1.5 text-success">
+                  <ShieldCheck size={14} strokeWidth={1.75} /> Pagado con Pasillo
+                </span>
+              </StaggerItem>
+            )}
             {rating && <StaggerItem>{rating}</StaggerItem>}
           </Stagger>
 
           {/* Kept outside Stagger: on mobile this is a fixed bar and transforms/filters would break `fixed`. */}
-          {!sold && !isSeller && <PhoneReveal listingId={id} />}
+          {listing.status === "activo" && !isSeller && (
+            <>
+              {canBuy && <p className="mt-4 text-center text-xs text-muted">o contacta y paga en mano / Bizum</p>}
+              <PhoneReveal listingId={id} inline={canBuy} />
+            </>
+          )}
+          {reserved && isOrderBuyer && <PhoneReveal listingId={id} />}
         </div>
       </div>
     </div>
