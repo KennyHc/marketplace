@@ -239,55 +239,32 @@ async function seedDatabase() {
     console.log(`✓ Created ${insertedListings?.length || 0} listings\n`);
   }
 
-  // Mark 2 listings as sold and add ratings
+  // Mark 2 of Ana's listings as sold (to Luis and Marta) and add ratings both ways.
+  // Written directly: mark_sold() relies on auth.uid(), which is null for the service role.
   console.log('Setting up sold listings with ratings...');
-  if (insertedListings && insertedListings.length >= 2) {
-    const listing1 = insertedListings[0]; // First listing
-    const listing2 = insertedListings[4]; // Another one
-
-    const buyerId = sellers[1]; // Luis as buyer
-    const anaId = createdUsers['ana@demo.test'].id;
-
-    // Create contact reveal for listing 1
-    await supabase
-      .from('contact_reveals')
-      .insert({ listing_id: listing1.id, buyer_id: buyerId });
-
-    // Mark listing 1 as sold
-    const { error: soldError1 } = await supabase
-      .rpc('mark_sold', { p_listing_id: listing1.id, p_buyer_id: buyerId });
-
-    if (!soldError1) {
-      // Add ratings for listing 1 (seller → buyer 5 stars, buyer → seller 4 stars)
+  const anaId = createdUsers['ana@demo.test'].id;
+  const buyers = [
+    { id: createdUsers['luis@demo.test'].id, toAna: 5, fromAna: 5 },
+    { id: createdUsers['marta@demo.test'].id, toAna: 4, fromAna: 5 },
+  ];
+  const anaListings = (insertedListings || []).filter((l) => l.seller_id === anaId);
+  for (const [i, buyer] of buyers.entries()) {
+    const listing = anaListings[i];
+    if (!listing) break;
+    const steps = [
+      await supabase.from('contact_reveals').insert({ listing_id: listing.id, buyer_id: buyer.id }),
       await supabase
-        .from('ratings')
-        .insert([
-          { listing_id: listing1.id, from_user: listing1.seller_id, to_user: buyerId, stars: 5 },
-          { listing_id: listing1.id, from_user: buyerId, to_user: listing1.seller_id, stars: 4 },
-        ]);
-      console.log(`✓ Marked listing "${listing1.title}" as sold with ratings`);
-    }
-
-    // Create contact reveal for listing 2
-    const marta2BuyerId = sellers[0]; // Ana as buyer for marta's listing
-    await supabase
-      .from('contact_reveals')
-      .insert({ listing_id: listing2.id, buyer_id: marta2BuyerId });
-
-    // Mark listing 2 as sold
-    const { error: soldError2 } = await supabase
-      .rpc('mark_sold', { p_listing_id: listing2.id, p_buyer_id: marta2BuyerId });
-
-    if (!soldError2) {
-      // Add ratings for listing 2
-      await supabase
-        .from('ratings')
-        .insert([
-          { listing_id: listing2.id, from_user: listing2.seller_id, to_user: marta2BuyerId, stars: 5 },
-          { listing_id: listing2.id, from_user: marta2BuyerId, to_user: listing2.seller_id, stars: 5 },
-        ]);
-      console.log(`✓ Marked listing "${listing2.title}" as sold with ratings`);
-    }
+        .from('listings')
+        .update({ status: 'vendido', buyer_id: buyer.id, sold_at: new Date().toISOString() })
+        .eq('id', listing.id),
+      await supabase.from('ratings').insert([
+        { listing_id: listing.id, from_user: buyer.id, to_user: anaId, stars: buyer.toAna },
+        { listing_id: listing.id, from_user: anaId, to_user: buyer.id, stars: buyer.fromAna },
+      ]),
+    ];
+    const failed = steps.find((r) => r.error);
+    if (failed) console.error(`Error marking "${listing.title}" as sold:`, failed.error);
+    else console.log(`✓ Marked "${listing.title}" as sold with ratings`);
   }
 
   console.log('\n' + '='.repeat(60));

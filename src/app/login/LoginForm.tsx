@@ -12,7 +12,9 @@ export function LoginForm() {
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
+  const [demoEmail, setDemoEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [pwLoading, setPwLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pwError, setPwError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -67,10 +69,10 @@ export function LoginForm() {
   async function passwordLogin(e: React.FormEvent) {
     e.preventDefault();
     setPwError(null);
-    setLoading(true);
-    const { error: err } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+    setPwLoading(true);
+    const { error: err } = await supabase.auth.signInWithPassword({ email: demoEmail.trim().toLowerCase(), password });
     if (err) {
-      setLoading(false);
+      setPwLoading(false);
       setPwError("Email o contraseña incorrectos.");
       return;
     }
@@ -113,14 +115,14 @@ export function LoginForm() {
         <form onSubmit={passwordLogin} className="mt-4 space-y-4">
           <div>
             <label htmlFor="demo-email" className="label">Email</label>
-            <input id="demo-email" type="email" required className="input" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input id="demo-email" type="email" required className="input" value={demoEmail} onChange={(e) => setDemoEmail(e.target.value)} />
           </div>
           <div>
             <label htmlFor="demo-pass" className="label">Contraseña</label>
             <input id="demo-pass" type="password" required autoComplete="current-password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           {pwError && <div className="error" role="alert">{pwError}</div>}
-          <button type="submit" className="btn-secondary w-full" disabled={loading}>Entrar</button>
+          <button type="submit" className="btn-secondary w-full" disabled={pwLoading}>{pwLoading ? "Entrando…" : "Entrar"}</button>
         </form>
       </details>
     </div>
